@@ -1,5 +1,5 @@
 class Competitor:
-    def __init__(self, size=1):
+    def __init__(self, size=10):
         self.size = size
         self.cash = 1000
         self.products = 0
@@ -7,18 +7,28 @@ class Competitor:
         self.production = self.size
 
         self.step = 0
-        self.cash_per_step = [self.cash]
-        self.profit = []
+        self.cash_hist = [self.cash]
+        self.income_hist = []
+        self.expenses_hist = []
+        self.profit_hist = []
+        self.products_hist = []
 
     def run(self):
         self.decide_action()
 
     def update_state(self):
-        self.step += 1
         self.cash -= self.expenses
-        self.cash_per_step.append(self.cash)
-        self.profit.append(self.cash_per_step[-1] - self.cash_per_step[-2])
+        self.cash_hist.append(self.cash)
+        self.income_hist.append(self.cash_hist[-1] - self.cash_hist[-2] + self.expenses)
+        self.expenses_hist.append(self.expenses)
+        self.profit_hist.append(self.cash_hist[-1] - self.cash_hist[-2])
+        self.products_hist.append(self.products)
+
+        # next step
+        self.products += self.production
+        self.step += 1
 
     def decide_action(self):
-        pass
+        # simple action: always selling for the same price
+        self.action = 150
 

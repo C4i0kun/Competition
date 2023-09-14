@@ -1,4 +1,4 @@
-from .Competitors import Competitor
+from competitors import Competitor
 
 import random
 import numpy as np
@@ -6,7 +6,7 @@ import numpy as np
 
 class Consumer:
     def __init__(self, mean, std):
-        self.money = max(np.random.normal(mean, std), 0)
+        self.money = max(np.random.normal(mean, std), 0.1)
         self.max_buying_price = self.money / 2
         self.steps_to_max = 100
 
@@ -52,6 +52,7 @@ class Environment:
 
     def set_actions(self):
         for index, competitor in enumerate(self.competitors):
+            competitor.run()
             self.actions[index] = competitor.action
 
     def step(self):
@@ -66,14 +67,15 @@ class Environment:
         for competitor in self.competitors:
             if (
                 competitor.action is not None
-                and competitor.product > 0
+                and competitor.products > 0
             ):
                 valid_competitors.append(competitor)
 
         competitors_ordered = sorted(valid_competitors, key=lambda x: x.action)
 
-        # randomly sort
-        buyers_randomized = random.shuffle(self.buyers)
+        # randomly sort buyers
+        buyers_randomized = self.buyers.copy()
+        random.shuffle(self.buyers)
 
         # buyers prefer lower prices
         while len(buyers_randomized) > 0 and len(competitors_ordered) > 0:
@@ -86,4 +88,12 @@ class Environment:
                 competitor.products -= 1
 
             if competitor.products > 0:
-                competitors_ordered.insert(0)
+                competitors_ordered.insert(0, competitor)
+        
+        # update max buying price
+        for buyer in self.buyers:
+            buyer.update_max_buying_price()
+
+        # update competitors state
+        for competitor in self.competitors:
+            competitor.update_state()
